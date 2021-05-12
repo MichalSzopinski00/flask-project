@@ -55,7 +55,7 @@ def portal():
 
         elif request.method == 'POST':
             f = request.files['file'] 
-            df = pd.read_csv(f)
+            df = pd.read_csv(f,sep=';')
 
             if df.shape[0] < 1000 and df.shape[1] < 20:
 
@@ -74,7 +74,42 @@ def portal():
                     size=os.stat(dir_with_name).st_size
                     data = file_details(name = filename, columns =df.shape[1], rows = df.shape[0], size = size) # baza danych
                     db.session.add(data)
+                    
+                    for column in df:
+                        if df[column].dtype == "object":
+                            unique= pd.unique(df[column].str.len())
+                            null_values = df[column].isnull().sum()
+                            nan_values = df[column].isna().sum()
+                            file_specs_db = file_specs(column_type = df[column].dtype.name,
+                                                        #dodaj klucz obcy! file_details_id = 
+                                                        number_of_unique_values = unique, # popraw !
+                                                        number_of_null_values = int(null_values),
+                                                        number_of_nan_values = int(nan_values))
+                            db.session.add(file_specs_db)
 
+                        elif df[column].dtype == "int64" or df[column].dtype == "float64":
+                            minimum_value = df[column].min()
+                            maximum_value = df[column].max()
+                            avg_value = df[column].mean()
+                            median_value = df[column].median()
+                            standard_deviation_value = df[column].std()
+                            file_specs_db2 = file_specs(column_type = df[column].dtype.name,
+                                                          #dodaj klucz obcy! file_details_id = 
+                                                          min = minimum_value,
+                                                          max = maximum_value,
+                                                          avg = avg_value,
+                                                          #median = median_value,
+                                                          standard_deviation = standard_deviation_value)
+                            db.session.add(file_specs_db2)
+                        elif df[column].dtype == "datetime64":
+                            first_date_value = df[column].min()
+                            last_date_value = df[column].max()
+                            file_specs_db3 = file_specs(column_type = df[column].dtype.name,
+                                                         #dodaj klucz obcy!
+                                                         first_date = first_date_value,
+                                                         last_date = last_date_value)
+                            db.session.add(file_specs_db3)
+                    db.session.commit() # potem usuń
                     try: # sprawdzenie poprawności jeśli ok wprowadź dane jeśli nie wycofaj
                         db.session.commit() 
                     except:
