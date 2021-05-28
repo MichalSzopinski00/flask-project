@@ -1,7 +1,13 @@
 <html>
     <body>
         <h1>twoje zaimportowane pliki csv:</h1>
-        
+        <ol>
+        {% for x in range(0,len) %}
+
+            <a href="/specific_file/{{s[x]}}"><li>{{ s[x] }}</li></a>
+
+        {% endfor %}
+        </ol>
     </body>
 
 </html>

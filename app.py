@@ -1,11 +1,12 @@
+from operator import methodcaller
 from flask import render_template, request, redirect
 from flask.app import Flask
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Column, Integer, String, Float, DateTime
+from sqlalchemy import Column, Integer, String, Float, DateTime, create_engine
 from sqlalchemy.sql.expression import column
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.sql.sqltypes import VARCHAR
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, sessionmaker 
 from werkzeug.utils import secure_filename 
 from pathlib import Path
 import matplotlib.pyplot as plt
@@ -30,11 +31,14 @@ class file_details(db.Model):
     rows = Column(Integer, nullable = True)
     size = Column(Integer, nullable = True)
     one_to_many = relationship('file_specs', backref='file_details', lazy='dynamic') 
+    def __repr__(self):
+        return f'{self.name}'
 
 class file_specs(db.Model):
     __tablename__ = 'file_specs'
     id = Column(Integer, primary_key = True, autoincrement=True)
-    file_details_id = Column(Integer, ForeignKey('file_details.id'),nullable=False)
+    file_details_id = Column(Integer, ForeignKey('file_details.id'), nullable=False)
+    column_name = Column(VARCHAR(30), nullable = True)
     column_type = Column(VARCHAR(30), nullable = True)
     min = Column(Float(),nullable=True)
     max = Column(Float(),nullable=True)
@@ -46,6 +50,20 @@ class file_specs(db.Model):
     number_of_unique_values = Column(Integer(),nullable=True)
     number_of_null_values = Column(Integer(),nullable=True)
     number_of_nan_values =Column(Integer(),nullable=True)
+    def __repr__(self):
+        return f'<id: {self.id},\
+            ID Tabeli: {self.file_details_id},\
+                Nazwa Kolumny: {self.column_name},\
+                    Typ Kolumny: {self.column_type},\
+                        Min: {self.min},\
+                            Max: {self.max},\
+                                Mediana:{self.median},\
+                                    Odchylenie Standardowe:{self.standard_deviation},\
+                                        Najwcześniejsza Data: {self.first_date},\
+                                            Najpóźniejsza Data: {self.last_date},\
+                                                Liczba Unikalnych Wartości: {self.number_of_unique_values},\
+                                                    Liczba Wartości NULL:{self.number_of_null_values},\
+                                                        Liczba Wartości NAN:{self.number_of_nan_values}>'
 
 @app.route('/',methods=['GET', 'POST'])
 
@@ -55,11 +73,11 @@ def portal():
 
         elif request.method == 'POST':
             f = request.files['file'] 
-            df = pd.read_csv(f)
+            df = pd.read_csv(f, sep=";")
 
             if df.shape[0] < 1000 and df.shape[1] < 20:
 
-                filename = secure_filename(f.filename) #zapis do pliku
+                filename = secure_filename(f.filename) 
                 path = r'C:\Users\mszopinski\Desktop\zaj\projekt flask\flask-project\files\{}'.format(filename)
                 dir_with_name=os.path.join(path, filename)
                 my_file = Path(dir_with_name)
@@ -77,14 +95,15 @@ def portal():
                                         rows = df.shape[0],
                                         size = size)
                     db.session.add(data)
-                    db.session.commit() # commit żeby ściągnąć data.id
+                    db.session.commit() 
 
                     for column in df:
-                        if df[column].dtype == "object": # zamien na sile na
+                        if df[column].dtype == "object": # zamien na sile na datetime 64
                             unique= np.count_nonzero(df[column].unique())
                             null_values = df[column].isnull().sum()
                             nan_values = df[column].isna().sum()
                             file_specs_db = file_specs(column_type = df[column].dtype.name,
+                                                        column_name=df[column].name,
                                                         file_details_id = data.id, 
                                                         number_of_unique_values = unique,
                                                         number_of_null_values = int(null_values),
@@ -98,7 +117,8 @@ def portal():
                             median_value = df[column].median()
                             standard_deviation_value = df[column].std()
                             file_specs_db2 = file_specs(column_type = df[column].dtype.name,
-                                                          file_details_id = data.id, 
+                                                          file_details_id = data.id,
+                                                          column_name=df[column].name,
                                                           min = minimum_value,
                                                           max = maximum_value,
                                                           avg = avg_value,
@@ -110,6 +130,7 @@ def portal():
                             first_date_value = df[column].min()
                             last_date_value = df[column].max()
                             file_specs_db3 = file_specs(column_type = df[column].dtype.name,
+                                                         column_name=df[column].name,
                                                          file_details_id = data.id,
                                                          first_date = first_date_value,
                                                          last_date = last_date_value)
@@ -138,11 +159,18 @@ def portal():
 @app.route('/summary',methods=['GET'])
 
 def summary():
-    return render_template("portalSummary.html")
+    print(file_details.query.all())
+    return render_template("portalSummary.html", s = file_details.query.all(), len = file_details.query.count())
 
-@app.route('/specific_file',methods=['GET'])
+@app.route('/specific_file/<filename>',methods=['GET'])
 
-def your_files():
+def specific_file(filename):
+    print(file_specs.query.count())
+    return render_template("portalfinal.html", s = file_specs.query.all(), len = file_specs.query.count())
+
+@app.route('/drop_file',methods =['GET'])
+
+def drop_file():
     print("y tho")
     
 if __name__ =="__main__":
