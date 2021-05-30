@@ -1,0 +1,15 @@
+,id;marka;model;typ samochodu;rocznik;cena;powypadkowy;data i godzina dodania ogłoszenia
+0,1;ford;focus;osobowy;2010;20500;0;20-05-2020 14:20
+1,2;opel;;osobowy;2014;13000;0;19-05-2020 10:21
+2,3;opel;adam;osobowy;2018;35000;0;11-05-2020 13:21
+3,4;opel;corsa;osobowy;2014;13000;1;19-05-2020 08:21
+4,5;opel;astra;osobowy;2007;8900;1;14-05-2020 09:36
+5,6;skoda;octavia;osobowy;2014;22000;0;21-04-2020 11:54
+6,7;audi;a4;osobowy;2008;38000;0;22-04-2020 01:12
+7,8;volkswagen;golf;osobowy;2005;12900;1;11-05-2020 15:48
+8,9;mercedes-benz;klasa s 500;osobowy;2001;41900;0;30-04-2020 14:52
+9,10;renault;master;dostawczy;2016;37314;0;13-04-2020 11:11
+10,11;volkswagen;craft;dostawczy;2003;6900;0;20-05-2020 10:19
+11,12;citroen;;dostawczy;2017;48780;0;10-05-2020 08:40
+12,13;man;NaN;ciężarowy;2004;22000;1;13-05-2020 10:15
+13,14;daf;xf 460;ciężarowy;2016;142000;0;26-05-2020 11:45

@@ -1,20 +1,20 @@
-from operator import methodcaller
-from flask import render_template, request, redirect
+from flask import render_template, request, redirect,url_for
 from flask.app import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, Integer, String, Float, DateTime, create_engine
-from sqlalchemy.sql.expression import column
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.sql.sqltypes import VARCHAR
-from sqlalchemy.orm import relationship, sessionmaker 
+from sqlalchemy.orm import relationship, Session
 from werkzeug.utils import secure_filename 
 from pathlib import Path
 import matplotlib.pyplot as plt
 import os
 import pandas as pd
 import numpy as np
+import shutil
 
-app = Flask(__name__)
+
+app = Flask(__name__,static_folder="files")
 
 UPLOAD_FOLDER=r"C:\Users\mszopinski\Desktop\zaj\projekt flask\flask-project\files"
 
@@ -49,31 +49,18 @@ class file_specs(db.Model):
     last_date = Column(DateTime(),nullable=True)
     number_of_unique_values = Column(Integer(),nullable=True)
     number_of_null_values = Column(Integer(),nullable=True)
-    number_of_nan_values =Column(Integer(),nullable=True)
-    def __repr__(self):
-        return f'<id: {self.id},\
-            ID Tabeli: {self.file_details_id},\
-                Nazwa Kolumny: {self.column_name},\
-                    Typ Kolumny: {self.column_type},\
-                        Min: {self.min},\
-                            Max: {self.max},\
-                                Mediana:{self.median},\
-                                    Odchylenie Standardowe:{self.standard_deviation},\
-                                        Najwcześniejsza Data: {self.first_date},\
-                                            Najpóźniejsza Data: {self.last_date},\
-                                                Liczba Unikalnych Wartości: {self.number_of_unique_values},\
-                                                    Liczba Wartości NULL:{self.number_of_null_values},\
-                                                        Liczba Wartości NAN:{self.number_of_nan_values}>'
+    number_of_nan_values = Column(Integer(),nullable=True)
 
 @app.route('/',methods=['GET', 'POST'])
 
 def portal():
+    try:
         if request.method == 'GET':
             return render_template('portal.html')
 
         elif request.method == 'POST':
             f = request.files['file'] 
-            df = pd.read_csv(f, sep=";")
+            df = pd.read_csv(f,sep=";")
 
             if df.shape[0] < 1000 and df.shape[1] < 20:
 
@@ -91,7 +78,7 @@ def portal():
                     df.to_csv(dir_with_name)
                     size=os.stat(dir_with_name).st_size
                     data = file_details(name = filename,
-                                        columns =df.shape[1],
+                                        columns = df.shape[1],
                                         rows = df.shape[0],
                                         size = size)
                     db.session.add(data)
@@ -155,23 +142,73 @@ def portal():
             
             else:    
                 return render_template('error1.html')
+    except:
+        return render_template('error.html')
 
 @app.route('/summary',methods=['GET'])
 
 def summary():
     print(file_details.query.all())
-    return render_template("portalSummary.html", s = file_details.query.all(), len = file_details.query.count())
+    return render_template("portalSummary.html",\
+                            s = file_details.query.all(),\
+                            len = file_details.query.count())
 
 @app.route('/specific_file/<filename>',methods=['GET'])
 
 def specific_file(filename):
-    print(file_specs.query.count())
-    return render_template("portalfinal.html", s = file_specs.query.all(), len = file_specs.query.count())
+    try:
+        get_id = file_details.query\
+            .filter(file_details.name == filename)
+        for x in get_id:
+            current_id = x.id
 
-@app.route('/drop_file',methods =['GET'])
+        ORM_query = file_specs.query\
+            .join(file_details, file_specs.file_details_id == file_details.id)\
+            .filter(file_specs.file_details_id == current_id)
 
-def drop_file():
-    print("y tho")
+        df = pd.read_csv(f'files/{filename}/{filename}')
+        list_of_histograms = []
+        for column in df:
+            if os.path.exists(f'files/{filename}/{df[column].name}.png'):
+                print (f"File {df[column].name}.png exist")
+                list_of_histograms.append(f'{df[column].name}.png')
+                
+            else:
+                pass
+        len_list = len(list_of_histograms)
+        return render_template("portalfinal.html",userList = ORM_query,\
+                                    list = list_of_histograms,\
+                                    filename = filename,\
+                                    len_list = len_list)
+    except:
+        return render_template("file_does_not_exist.html")
+
+@app.route('/drop_file/<filename>',methods = ['GET'])
+
+def drop_file(filename):
+    try:
+        get_id = file_details.query\
+            .filter(file_details.name == filename)\
+
+        for y in get_id:
+            current_id = y.id
+
+        file_specs.query\
+            .filter(file_specs.file_details_id == current_id)\
+            .delete()
+            
+        file_details.query\
+            .filter(file_details.name == filename)\
+            .delete()
+
+        path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        shutil.rmtree(path)
+        
+        db.session.commit()
+        return render_template("portalDeleteFile.html")
+    except:
+        db.session.rollback()
+        return render_template("error_unfinished_drop.html")
     
 if __name__ =="__main__":
     db.create_all()

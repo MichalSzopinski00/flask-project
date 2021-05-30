@@ -1,13 +1,76 @@
 <html>
     <body>
-        <h1>Dane twojej zaimportowanej tabeli i jej specyfikacja:</h1>
-        <table border="1">
-        {% for x in range(0,len) %}
+        <button><a href="/drop_file/{{filename}}" >Kliknij aby usunąć plik</a></button>
+        <h1>Dane twojego zaimportowanego pliku i jego specyfikacja:</h1>
+    <table border="1">
+    <th>
+        <tr style="color: black; ">
 
-            <tr><td>{{ s[x] }}</td></tr>
+       <th>ID </th>
+       <th>File Details ID</th>
+       <th>Nazwa Kolumny</th>
+       <th>Typ Kolumny</th>
+       <th>Min</th>
+       <th>Max</th>
+       <th>Mediana</th>
+       <th>Odchylenie Standardowe</th>
+       <th>Najwcześniejsza Data</th>
+       <th>Najpóźniejsza Data</th>
+       <th>Liczba Unikalnych Wartości</th>
+       <th>Liczba Wartości NULL</th>
+       <th>Liczba Wartości NAN</th>
 
-        {% endfor %}
-        </table>
+       </tr>
+   </th>
+{%for x in userList%}
+    <tr>
+        <td>
+            {{x.id}}
+       </td>
+        <td>
+            {{x.file_details_id}}
+        </td>
+        <td>
+            {{x.column_name}}
+        </td>
+        <td>
+            {{x.column_type}}
+        </td>
+        <td>
+            {{x.min}}
+        </td>
+        <td>
+            {{x.max}}
+        </td>
+        <td>
+            {{x.median}}
+        </td>
+        <td>
+            {{x.standard_deviation}}
+        </td>
+        <td>
+            {{x.first_date}}
+        </td>
+        <td>
+            {{x.last_date}}
+        </td>
+        <td>
+            {{x.number_of_unique_values}}
+        </td>
+        <td>
+            {{x.number_of_null_values}}
+        </td>
+        <td>
+            {{x.number_of_nan_values}}
+        </td>
+    </tr>
+{%endfor%}
+    </table>
+{%if len_list >0%}
+    {%for i in list%}
+        <img src={{url_for('static',filename = filename + "/" + i)}}/>
+        <!--/static/cena.png-->
+    {%endfor%}
+{%endif%}
     </body>
-
 </html>
