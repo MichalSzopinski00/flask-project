@@ -1,0 +1,2 @@
+author:Michał Szopiński
+ver:1.01

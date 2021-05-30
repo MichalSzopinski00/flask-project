@@ -1,8 +1,0 @@
-,id,int,1,7.5,14,7.5.1,4.03,id_hist.png
-0,marka,object,10,0,0.0,,,
-1,model,object,11,2,1.0,,,
-2,typ samochodu,object,3,0,0.0,,,
-3,rocznik,int,2001,2010.5,2018.0,2012.0,5.77,rocznik_hist.png
-4,cena,int,6900,33013.85,142000.0,22000.0,34105.16,cena_hist.png
-5,powypadkowy,int,0,0.285714,1.0,0.0,0.468807,powypadkowy_hist.png
-6,data i godzina dodania ogłoszenia,datetime,13-04-2020 11:11,26-05-2020 11:45,,,,

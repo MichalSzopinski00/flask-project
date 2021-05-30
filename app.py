@@ -1,4 +1,5 @@
-from flask import render_template, request, redirect,url_for
+#Author:@Michal Szopinski
+from flask import render_template, request, redirect, url_for
 from flask.app import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, Integer, String, Float, DateTime, create_engine
@@ -14,7 +15,7 @@ import numpy as np
 import shutil
 
 
-app = Flask(__name__,static_folder="files")
+app = Flask(__name__, static_folder="files")
 
 UPLOAD_FOLDER=r"C:\Users\mszopinski\Desktop\zaj\projekt flask\flask-project\files"
 
@@ -85,7 +86,7 @@ def portal():
                     db.session.commit() 
 
                     for column in df:
-                        if df[column].dtype == "object": # zamien na sile na datetime 64
+                        if df[column].dtype == "object":
                             unique= np.count_nonzero(df[column].unique())
                             null_values = df[column].isnull().sum()
                             nan_values = df[column].isna().sum()
@@ -112,6 +113,9 @@ def portal():
                                                           median = median_value,
                                                           standard_deviation = standard_deviation_value)
                             db.session.add(file_specs_db2)
+                            df[column].value_counts().plot(kind='bar', 
+                                                         title='number of numeric values') 
+                            plt.savefig(f"files\{filename}\{df[column].name}.png")
 
                         elif df[column].dtype == "datetime64":
                             first_date_value = df[column].min()
