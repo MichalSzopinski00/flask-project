@@ -61,7 +61,7 @@ def portal():
 
         elif request.method == 'POST':
             f = request.files['file'] 
-            df = pd.read_csv(f,sep=";")
+            df = pd.read_csv(f, sep=";")
 
             if df.shape[0] < 1000 and df.shape[1] < 20:
 
