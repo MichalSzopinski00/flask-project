@@ -8,6 +8,8 @@ from sqlalchemy.sql.sqltypes import VARCHAR
 from sqlalchemy.orm import relationship, Session
 from werkzeug.utils import secure_filename 
 from pathlib import Path
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import os
 import pandas as pd
@@ -63,7 +65,7 @@ def portal():
             f = request.files['file'] 
             df = pd.read_csv(f, sep=";")
 
-            if df.shape[0] < 1000 and df.shape[1] < 20:
+            if df.shape[0] <= 1000 and df.shape[1] <= 20:
 
                 filename = secure_filename(f.filename) 
                 path = r'C:\Users\mszopinski\Desktop\zaj\projekt flask\flask-project\files\{}'.format(filename)
@@ -113,8 +115,8 @@ def portal():
                                                           median = median_value,
                                                           standard_deviation = standard_deviation_value)
                             db.session.add(file_specs_db2)
-                            df[column].value_counts().plot(kind='bar', 
-                                                         title='number of numeric values') 
+                            df[column].value_counts().plot(kind="bar",
+                                                        title=f'wykres dotyczący kolumny: {df[column].name}')
                             plt.savefig(f"files\{filename}\{df[column].name}.png")
 
                         elif df[column].dtype == "datetime64":
@@ -128,16 +130,16 @@ def portal():
                             db.session.add(file_specs_db3)
 
                         elif df[column].dtype == "bool":
-                            df[column].value_counts().plot(kind='bar', 
-                                                         title='number of bool values') 
+                            df[column].value_counts().plot(kind="bar",
+                                                        title=f'wykres dotyczący kolumny: {df[column].name}')
                             plt.savefig(f"files\{filename}\{df[column].name}.png")
 
                         elif df[column].dtype == "Category":
-                            df[column].value_counts().plot(kind='bar', 
-                                                         title='number of Categorical values') 
+                            df[column].value_counts().plot(kind="bar",
+                                                        title=f'wykres dotyczący kolumny: {df[column].name}')
                             plt.savefig(f"files\{filename}\{df[column].name}.png")
                     try: 
-                        db.session.commit() 
+                        db.session.commit()
                     except:
                         db.session.rollback()
                         return "niestety taki rekord już istnieje w bazie danych najpierw usuń dane z bazy i spróbuj ponownie"
