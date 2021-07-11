@@ -1,5 +1,5 @@
-#Author:@Michal Szopinski
-from flask import render_template, request, redirect, url_for
+#Author:@Michał Szopiński
+from flask import flash, render_template, request, redirect, url_for
 from flask.app import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, Integer, String, Float, DateTime, create_engine
@@ -16,13 +16,11 @@ import pandas as pd
 import numpy as np
 import shutil
 
-
 app = Flask(__name__, static_folder="files")
 
-UPLOAD_FOLDER=r"C:\Users\mszopinski\Desktop\zaj\projekt flask\flask-project\files"
-
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['SQLALCHEMY_DATABASE_URI'] = r"sqlite:///C:\Users\mszopinski\Desktop\zaj\projekt flask\flask-project\my.db"
+app.config['UPLOAD_FOLDER'] = '.\files'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///my.db'
+app.secret_key="987654321DWT"
 
 db = SQLAlchemy(app)
 
@@ -57,26 +55,26 @@ class file_specs(db.Model):
 @app.route('/',methods=['GET', 'POST'])
 
 def portal():
-    try:
         if request.method == 'GET':
             return render_template('portal.html')
 
         elif request.method == 'POST':
             f = request.files['file'] 
-            df = pd.read_csv(f, sep=";")
+            df = pd.read_csv(f)
 
             if df.shape[0] <= 1000 and df.shape[1] <= 20:
 
                 filename = secure_filename(f.filename) 
-                path = r'C:\Users\mszopinski\Desktop\zaj\projekt flask\flask-project\files\{}'.format(filename)
+                path = r'./files/{}'.format(filename)
                 dir_with_name=os.path.join(path, filename)
                 my_file = Path(dir_with_name)
 
                 if my_file.exists():
-                    return "taki plik już istnieje"
+                    flash("taki plik już istnieje","danger")
+                    return redirect('/')
                 
                 else:
-                    os.makedirs(r'C:\Users\mszopinski\Desktop\zaj\projekt flask\flask-project\files\{}'.format(filename))
+                    os.makedirs(r'./files/{}'.format(filename))
                     f.save(dir_with_name)
                     df.to_csv(dir_with_name)
                     size=os.stat(dir_with_name).st_size
@@ -142,14 +140,14 @@ def portal():
                         db.session.commit()
                     except:
                         db.session.rollback()
-                        return "niestety taki rekord już istnieje w bazie danych najpierw usuń dane z bazy i spróbuj ponownie"
-                    
+                        flash("niestety taki rekord już istnieje w bazie danych najpierw usuń dane z bazy i spróbuj ponownie","danger")
+                        return redirect('/')
+
                     return redirect("/summary")
             
-            else:    
-                return render_template('error1.html')
-    except:
-        return render_template('error.html')
+            else: 
+                flash("Plik csv jest za duży!","danger")
+                return redirect("/")
 
 @app.route('/summary',methods=['GET'])
 
@@ -187,7 +185,9 @@ def specific_file(filename):
                                     filename = filename,\
                                     len_list = len_list)
     except:
-        return render_template("file_does_not_exist.html")
+        flash("Ten plik nie istnieje na serwerze","danger")
+        return redirect('/')
+
 
 @app.route('/drop_file/<filename>',methods = ['GET'])
 
@@ -207,14 +207,16 @@ def drop_file(filename):
             .filter(file_details.name == filename)\
             .delete()
 
-        path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        path = os.path.join('./files', filename)
         shutil.rmtree(path)
         
         db.session.commit()
-        return render_template("portalDeleteFile.html")
+        flash("Twój plik został pomyślnie usunięty", "info") 
+        return redirect('/')
     except:
         db.session.rollback()
-        return render_template("error_unfinished_drop.html")
+        flash("Niestety nie udało się usunąć pliku błąd! Prawdopodobnie plik który próbujesz usunąć już nie istnieje", "danger")
+        return redirect('/summary')
     
 if __name__ =="__main__":
     db.create_all()

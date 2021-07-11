@@ -1,76 +1,106 @@
-<html>
-    <body>
-        <button><a href="/drop_file/{{filename}}" >Kliknij aby usunąć plik</a></button>
-        <h1>Dane twojego zaimportowanego pliku i jego specyfikacja:</h1>
-    <table border="1">
-    <th>
-        <tr style="color: black; ">
+<!doctype html>
+	<html lang="PL-pl">
+	<head>
 
-       <th>ID </th>
-       <th>File Details ID</th>
-       <th>Nazwa Kolumny</th>
-       <th>Typ Kolumny</th>
-       <th>Min</th>
-       <th>Max</th>
-       <th>Mediana</th>
-       <th>Odchylenie Standardowe</th>
-       <th>Najwcześniejsza Data</th>
-       <th>Najpóźniejsza Data</th>
-       <th>Liczba Unikalnych Wartości</th>
-       <th>Liczba Wartości NULL</th>
-       <th>Liczba Wartości NAN</th>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-       </tr>
-   </th>
-{%for x in userList%}
-    <tr>
-        <td>
-            {{x.id}}
-       </td>
-        <td>
-            {{x.file_details_id}}
-        </td>
-        <td>
-            {{x.column_name}}
-        </td>
-        <td>
-            {{x.column_type}}
-        </td>
-        <td>
-            {{x.min}}
-        </td>
-        <td>
-            {{x.max}}
-        </td>
-        <td>
-            {{x.median}}
-        </td>
-        <td>
-            {{x.standard_deviation}}
-        </td>
-        <td>
-            {{x.first_date}}
-        </td>
-        <td>
-            {{x.last_date}}
-        </td>
-        <td>
-            {{x.number_of_unique_values}}
-        </td>
-        <td>
-            {{x.number_of_null_values}}
-        </td>
-        <td>
-            {{x.number_of_nan_values}}
-        </td>
-    </tr>
-{%endfor%}
-    </table>
-{%if len_list >0%}
-    {%for i in list%}
-        <img src={{url_for('static',filename = filename + "/" + i)}}/>
-        <!--/static/cena.png-->
-    {%endfor%}
-{%endif%}
-    </body>
-</html>
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+		<title>Strona Główna</title>
+	</head>
+	<body>
+		<nav class="navbar navbar-expand-md navbar-dark bg-dark">
+			<a class="navbar-brand" href="#">Michał Szopiński</a>
+			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+			  <span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse" id="navbarNav">
+			  <ul class="navbar-nav mr-auto">
+				  <li class="nav-item active">
+					  <a class="nav-link" href="{{ url_for('portal') }}">Home <span class="sr-only">(current)</span></a>
+				  </li>
+                  <li>
+                      <a class="nav-link" href="/summary">Imported Files</a>
+                  </li>
+			  </ul>
+			</div>
+		  </nav>
+          
+        <br><center><h1>Dane twojego zaimportowanego pliku i jego specyfikacja:</h1></center><br>
+        <table class="table table-bordered">
+                <th>
+                    <tr style="color: black; ">
+            
+                   <th>ID </th>
+                   <th>File Details ID</th>
+                   <th>Nazwa Kolumny</th>
+                   <th>Typ Kolumny</th>
+                   <th>Min</th>
+                   <th>Max</th>
+                   <th>Mediana</th>
+                   <th>Odchylenie Standardowe</th>
+                   <th>Najwcześniejsza Data</th>
+                   <th>Najpóźniejsza Data</th>
+                   <th>Liczba Unikalnych Wartości</th>
+                   <th>Liczba Wartości NULL</th>
+                   <th>Liczba Wartości NAN</th>
+            
+                   </tr>
+               </th>
+            {%for x in userList%}
+                <tr>
+                    <td>
+                        {{x.id}}
+                   </td>
+                    <td>
+                        {{x.file_details_id}}
+                    </td>
+                    <td>
+                        {{x.column_name}}
+                    </td>
+                    <td>
+                        {{x.column_type}}
+                    </td>
+                    <td>
+                        {{x.min}}
+                    </td>
+                    <td>
+                        {{x.max}}
+                    </td>
+                    <td>
+                        {{x.median}}
+                    </td>
+                    <td>
+                        {{x.standard_deviation}}
+                    </td>
+                    <td>
+                        {{x.first_date}}
+                    </td>
+                    <td>
+                        {{x.last_date}}
+                    </td>
+                    <td>
+                        {{x.number_of_unique_values}}
+                    </td>
+                    <td>
+                        {{x.number_of_null_values}}
+                    </td>
+                    <td>
+                        {{x.number_of_nan_values}}
+                    </td>
+                </tr>
+            {%endfor%}
+            </table>
+            {%if len_list >0%}
+                {%for i in list%}
+                    <img src={{url_for('static',filename = filename + "/" + i)}}/>
+                {%endfor%}
+            {%endif%}
+ 
+
+		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+	</body>
+	</html>
